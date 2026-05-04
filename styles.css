@@ -323,6 +323,12 @@ button:focus-visible {
   gap: 10px;
 }
 
+.item-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .item-amount {
   max-width: 180px;
   overflow-wrap: anywhere;
@@ -362,6 +368,11 @@ button:focus-visible {
 
   .item-actions {
     justify-content: space-between;
+  }
+
+  .item-buttons {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .item-amount {

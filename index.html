@@ -20,7 +20,7 @@
       <header class="topbar">
         <div>
           <p class="eyebrow">Personal balance</p>
-          <h1>MyAssetApp</h1>
+          <h1>자산 관리</h1>
         </div>
         <button class="ghost-button" id="resetButton" type="button" aria-label="전체 데이터 초기화">
           초기화
@@ -87,7 +87,10 @@
         </div>
         <div class="item-actions">
           <span class="item-amount"></span>
-          <button type="button" aria-label="항목 삭제">삭제</button>
+          <div class="item-buttons">
+            <button type="button" data-edit-entry aria-label="항목 수정">수정</button>
+            <button type="button" data-delete-entry aria-label="항목 삭제">삭제</button>
+          </div>
         </div>
       </li>
     </template>
@@ -121,7 +124,7 @@
         </label>
         <div class="dialog-actions">
           <button class="ghost-button" type="button" data-close-dialog>취소</button>
-          <button class="primary-button" type="submit">저장</button>
+          <button class="primary-button" type="submit" data-submit-label>저장</button>
         </div>
       </form>
     </dialog>
@@ -154,7 +157,7 @@
         </label>
         <div class="dialog-actions">
           <button class="ghost-button" type="button" data-close-dialog>취소</button>
-          <button class="primary-button danger" type="submit">저장</button>
+          <button class="primary-button danger" type="submit" data-submit-label>저장</button>
         </div>
       </form>
     </dialog>

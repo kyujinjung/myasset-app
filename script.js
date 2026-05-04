@@ -1,6 +1,10 @@
 const STORAGE_KEY = "asset-manager-state";
 
 const state = loadState();
+const editing = {
+  collection: null,
+  id: null,
+};
 
 const elements = {
   assetForm: document.querySelector("#assetForm"),
@@ -28,11 +32,11 @@ elements.amountInputs.forEach((input) => {
 });
 
 elements.openAssetDialog.addEventListener("click", () => {
-  openDialog(elements.assetDialog);
+  openCreateDialog("assets");
 });
 
 elements.openDebtDialog.addEventListener("click", () => {
-  openDialog(elements.debtDialog);
+  openCreateDialog("debts");
 });
 
 document.querySelectorAll("[data-close-dialog]").forEach((button) => {
@@ -55,12 +59,12 @@ document.querySelectorAll("[data-close-dialog]").forEach((button) => {
 
 elements.assetForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  addEntry("assets", elements.assetForm, elements.assetDialog);
+  saveEntry("assets", elements.assetForm, elements.assetDialog);
 });
 
 elements.debtForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  addEntry("debts", elements.debtForm, elements.debtDialog);
+  saveEntry("debts", elements.debtForm, elements.debtDialog);
 });
 
 elements.resetButton.addEventListener("click", () => {
@@ -75,6 +79,33 @@ elements.resetButton.addEventListener("click", () => {
   render();
 });
 
+function openCreateDialog(collection) {
+  editing.collection = null;
+  editing.id = null;
+
+  const dialog = getDialog(collection);
+  const form = getForm(collection);
+  form.reset();
+  setDialogMode(collection, "create");
+  openDialog(dialog);
+}
+
+function openEditDialog(collection, id) {
+  const item = state[collection].find((entry) => entry.id === id);
+  if (!item) return;
+
+  editing.collection = collection;
+  editing.id = id;
+
+  const dialog = getDialog(collection);
+  const form = getForm(collection);
+  form.elements.name.value = item.name;
+  form.elements.amount.value = formatInputAmount(item.amount);
+  form.elements.type.value = item.type;
+  setDialogMode(collection, "edit");
+  openDialog(dialog);
+}
+
 function openDialog(dialog) {
   dialog.showModal();
   dialog.querySelector("input").focus();
@@ -84,7 +115,7 @@ function closeDialog(dialog) {
   dialog.close();
 }
 
-function addEntry(collection, form, dialog) {
+function saveEntry(collection, form, dialog) {
   const data = new FormData(form);
   const name = String(data.get("name") || "").trim();
   const amount = parseInputAmount(data.get("amount"));
@@ -92,15 +123,26 @@ function addEntry(collection, form, dialog) {
 
   if (!name || !Number.isFinite(amount) || amount <= 0) return;
 
-  state[collection].push({
-    id: createId(),
-    name,
-    amount,
-    type,
-  });
+  if (editing.collection === collection && editing.id) {
+    const item = state[collection].find((entry) => entry.id === editing.id);
+    if (item) {
+      item.name = name;
+      item.amount = amount;
+      item.type = type;
+    }
+  } else {
+    state[collection].push({
+      id: createId(),
+      name,
+      amount,
+      type,
+    });
+  }
 
   persist();
   form.reset();
+  editing.collection = null;
+  editing.id = null;
   closeDialog(dialog);
   render();
 }
@@ -132,12 +174,14 @@ function renderList(collection, list) {
   state[collection].forEach((item) => {
     const fragment = elements.template.content.cloneNode(true);
     const row = fragment.querySelector(".money-item");
-    const deleteButton = fragment.querySelector("button");
+    const editButton = fragment.querySelector("[data-edit-entry]");
+    const deleteButton = fragment.querySelector("[data-delete-entry]");
 
     row.classList.toggle("debt", collection === "debts");
     fragment.querySelector(".item-name").textContent = item.name;
     fragment.querySelector(".item-type").textContent = item.type;
     fragment.querySelector(".item-amount").textContent = formatWon(item.amount);
+    editButton.addEventListener("click", () => openEditDialog(collection, item.id));
     deleteButton.addEventListener("click", () => deleteEntry(collection, item.id));
 
     list.append(fragment);
@@ -157,6 +201,25 @@ function formatInputAmount(value) {
 
 function parseInputAmount(value) {
   return Number(String(value).replace(/,/g, ""));
+}
+
+function getDialog(collection) {
+  return collection === "assets" ? elements.assetDialog : elements.debtDialog;
+}
+
+function getForm(collection) {
+  return collection === "assets" ? elements.assetForm : elements.debtForm;
+}
+
+function setDialogMode(collection, mode) {
+  const form = getForm(collection);
+  const title = form.querySelector("h2");
+  const submitLabel = form.querySelector("[data-submit-label]");
+  const label = collection === "assets" ? "자산" : "부채";
+  const action = mode === "edit" ? "수정" : "추가";
+
+  title.textContent = `${label} ${action}`;
+  submitLabel.textContent = mode === "edit" ? "수정 저장" : "저장";
 }
 
 function formatWon(value) {
