@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MyAssetApp">
+  <rect width="512" height="512" rx="112" fill="#1f2a24"/>
+  <circle cx="256" cy="256" r="150" fill="#dff2eb"/>
+  <path fill="#0b7a5a" d="M151 292h65V178h80c52 0 86 31 86 76 0 47-34 78-86 78h-38v69h-42V292h-65zm107 3h36c28 0 46-16 46-41 0-24-18-39-46-39h-36v80z"/>
+  <path fill="#b8453e" d="M151 331h65v70h-65z"/>
+</svg>

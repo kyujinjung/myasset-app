@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1f2a24" />
+    <meta name="description" content="자산과 부채를 빠르게 기록하고 순자산을 확인하는 개인 자산 웹앱" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MyAsset" />
+    <title>MyAssetApp</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Personal balance</p>
+          <h1>MyAssetApp</h1>
+        </div>
+        <button class="ghost-button" id="resetButton" type="button" aria-label="전체 데이터 초기화">
+          초기화
+        </button>
+      </header>
+
+      <section class="summary-grid" aria-label="자산 요약">
+        <article class="summary-panel net-worth">
+          <span>순자산</span>
+          <strong id="netWorth">0원</strong>
+        </article>
+        <article class="summary-panel">
+          <span>총 자산</span>
+          <strong id="totalAssets">0원</strong>
+        </article>
+        <article class="summary-panel">
+          <span>총 부채</span>
+          <strong id="totalDebts">0원</strong>
+        </article>
+      </section>
+
+      <section class="entry-layout" aria-label="자산 및 부채 입력">
+        <form class="entry-form asset-form" id="assetForm">
+          <div class="form-heading">
+            <h2>자산 추가</h2>
+            <span>현금, 예금, 주식, 부동산</span>
+          </div>
+          <label>
+            이름
+            <input id="assetName" name="name" type="text" placeholder="예: 예금" autocomplete="off" required />
+          </label>
+          <label>
+            금액
+            <input id="assetAmount" name="amount" type="number" min="0" step="1000" placeholder="0" required />
+          </label>
+          <label>
+            종류
+            <select id="assetType" name="type">
+              <option>현금</option>
+              <option>예금</option>
+              <option>주식</option>
+              <option>부동산</option>
+              <option>기타</option>
+            </select>
+          </label>
+          <button class="primary-button" type="submit">자산 추가</button>
+        </form>
+
+        <form class="entry-form debt-form" id="debtForm">
+          <div class="form-heading">
+            <h2>부채 추가</h2>
+            <span>대출, 빌린돈, 카드값</span>
+          </div>
+          <label>
+            이름
+            <input id="debtName" name="name" type="text" placeholder="예: 주택담보대출" autocomplete="off" required />
+          </label>
+          <label>
+            금액
+            <input id="debtAmount" name="amount" type="number" min="0" step="1000" placeholder="0" required />
+          </label>
+          <label>
+            종류
+            <select id="debtType" name="type">
+              <option>대출</option>
+              <option>빌린돈</option>
+              <option>카드값</option>
+              <option>기타</option>
+            </select>
+          </label>
+          <button class="primary-button danger" type="submit">부채 추가</button>
+        </form>
+      </section>
+
+      <section class="list-layout" aria-label="자산 및 부채 목록">
+        <div class="list-section">
+          <div class="section-heading">
+            <h2>자산 목록</h2>
+            <span id="assetCount">0개</span>
+          </div>
+          <ul class="money-list" id="assetList"></ul>
+        </div>
+
+        <div class="list-section">
+          <div class="section-heading">
+            <h2>부채 목록</h2>
+            <span id="debtCount">0개</span>
+          </div>
+          <ul class="money-list" id="debtList"></ul>
+        </div>
+      </section>
+    </main>
+
+    <template id="itemTemplate">
+      <li class="money-item">
+        <div>
+          <strong class="item-name"></strong>
+          <span class="item-type"></span>
+        </div>
+        <div class="item-actions">
+          <span class="item-amount"></span>
+          <button type="button" aria-label="항목 삭제">삭제</button>
+        </div>
+      </li>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>
