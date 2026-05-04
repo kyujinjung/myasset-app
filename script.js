@@ -5,6 +5,11 @@ const state = loadState();
 const elements = {
   assetForm: document.querySelector("#assetForm"),
   debtForm: document.querySelector("#debtForm"),
+  amountInputs: document.querySelectorAll('input[name="amount"]'),
+  assetDialog: document.querySelector("#assetDialog"),
+  debtDialog: document.querySelector("#debtDialog"),
+  openAssetDialog: document.querySelector("#openAssetDialog"),
+  openDebtDialog: document.querySelector("#openDebtDialog"),
   assetList: document.querySelector("#assetList"),
   debtList: document.querySelector("#debtList"),
   assetCount: document.querySelector("#assetCount"),
@@ -16,14 +21,46 @@ const elements = {
   template: document.querySelector("#itemTemplate"),
 };
 
+elements.amountInputs.forEach((input) => {
+  input.addEventListener("input", () => {
+    input.value = formatInputAmount(input.value);
+  });
+});
+
+elements.openAssetDialog.addEventListener("click", () => {
+  openDialog(elements.assetDialog);
+});
+
+elements.openDebtDialog.addEventListener("click", () => {
+  openDialog(elements.debtDialog);
+});
+
+document.querySelectorAll("[data-close-dialog]").forEach((button) => {
+  button.addEventListener("click", () => {
+    closeDialog(button.closest("dialog"));
+  });
+});
+
+[elements.assetDialog, elements.debtDialog].forEach((dialog) => {
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) {
+      closeDialog(dialog);
+    }
+  });
+
+  dialog.addEventListener("close", () => {
+    dialog.querySelector("form").reset();
+  });
+});
+
 elements.assetForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  addEntry("assets", elements.assetForm);
+  addEntry("assets", elements.assetForm, elements.assetDialog);
 });
 
 elements.debtForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  addEntry("debts", elements.debtForm);
+  addEntry("debts", elements.debtForm, elements.debtDialog);
 });
 
 elements.resetButton.addEventListener("click", () => {
@@ -38,10 +75,19 @@ elements.resetButton.addEventListener("click", () => {
   render();
 });
 
-function addEntry(collection, form) {
+function openDialog(dialog) {
+  dialog.showModal();
+  dialog.querySelector("input").focus();
+}
+
+function closeDialog(dialog) {
+  dialog.close();
+}
+
+function addEntry(collection, form, dialog) {
   const data = new FormData(form);
   const name = String(data.get("name") || "").trim();
-  const amount = Number(data.get("amount"));
+  const amount = parseInputAmount(data.get("amount"));
   const type = String(data.get("type") || "기타");
 
   if (!name || !Number.isFinite(amount) || amount <= 0) return;
@@ -55,7 +101,7 @@ function addEntry(collection, form) {
 
   persist();
   form.reset();
-  form.querySelector("input").focus();
+  closeDialog(dialog);
   render();
 }
 
@@ -100,6 +146,17 @@ function renderList(collection, list) {
 
 function sum(items) {
   return items.reduce((total, item) => total + item.amount, 0);
+}
+
+function formatInputAmount(value) {
+  const digits = String(value).replace(/\D/g, "");
+  if (!digits) return "";
+
+  return Number(digits).toLocaleString("ko-KR");
+}
+
+function parseInputAmount(value) {
+  return Number(String(value).replace(/,/g, ""));
 }
 
 function formatWon(value) {

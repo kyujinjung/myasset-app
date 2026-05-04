@@ -43,56 +43,21 @@
       </section>
 
       <section class="entry-layout" aria-label="자산 및 부채 입력">
-        <form class="entry-form asset-form" id="assetForm">
+        <article class="entry-card asset-card">
           <div class="form-heading">
             <h2>자산 추가</h2>
             <span>현금, 예금, 주식, 부동산</span>
           </div>
-          <label>
-            이름
-            <input id="assetName" name="name" type="text" placeholder="예: 예금" autocomplete="off" required />
-          </label>
-          <label>
-            금액
-            <input id="assetAmount" name="amount" type="number" min="0" step="1000" placeholder="0" required />
-          </label>
-          <label>
-            종류
-            <select id="assetType" name="type">
-              <option>현금</option>
-              <option>예금</option>
-              <option>주식</option>
-              <option>부동산</option>
-              <option>기타</option>
-            </select>
-          </label>
-          <button class="primary-button" type="submit">자산 추가</button>
-        </form>
+          <button class="primary-button" id="openAssetDialog" type="button">자산 추가</button>
+        </article>
 
-        <form class="entry-form debt-form" id="debtForm">
+        <article class="entry-card debt-card">
           <div class="form-heading">
             <h2>부채 추가</h2>
             <span>대출, 빌린돈, 카드값</span>
           </div>
-          <label>
-            이름
-            <input id="debtName" name="name" type="text" placeholder="예: 주택담보대출" autocomplete="off" required />
-          </label>
-          <label>
-            금액
-            <input id="debtAmount" name="amount" type="number" min="0" step="1000" placeholder="0" required />
-          </label>
-          <label>
-            종류
-            <select id="debtType" name="type">
-              <option>대출</option>
-              <option>빌린돈</option>
-              <option>카드값</option>
-              <option>기타</option>
-            </select>
-          </label>
-          <button class="primary-button danger" type="submit">부채 추가</button>
-        </form>
+          <button class="primary-button danger" id="openDebtDialog" type="button">부채 추가</button>
+        </article>
       </section>
 
       <section class="list-layout" aria-label="자산 및 부채 목록">
@@ -126,6 +91,73 @@
         </div>
       </li>
     </template>
+
+    <dialog class="entry-dialog" id="assetDialog" aria-labelledby="assetDialogTitle">
+      <form class="entry-form asset-form" id="assetForm">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Asset</p>
+            <h2 id="assetDialogTitle">자산 추가</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog aria-label="팝업 닫기">×</button>
+        </div>
+        <label>
+          이름
+          <input id="assetName" name="name" type="text" placeholder="예: 예금" autocomplete="off" required />
+        </label>
+        <label>
+          금액
+          <input id="assetAmount" name="amount" type="text" inputmode="numeric" placeholder="0" required />
+        </label>
+        <label>
+          종류
+          <select id="assetType" name="type">
+            <option>현금</option>
+            <option>예금</option>
+            <option>주식</option>
+            <option>부동산</option>
+            <option>기타</option>
+          </select>
+        </label>
+        <div class="dialog-actions">
+          <button class="ghost-button" type="button" data-close-dialog>취소</button>
+          <button class="primary-button" type="submit">저장</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="entry-dialog" id="debtDialog" aria-labelledby="debtDialogTitle">
+      <form class="entry-form debt-form" id="debtForm">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Debt</p>
+            <h2 id="debtDialogTitle">부채 추가</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog aria-label="팝업 닫기">×</button>
+        </div>
+        <label>
+          이름
+          <input id="debtName" name="name" type="text" placeholder="예: 주택담보대출" autocomplete="off" required />
+        </label>
+        <label>
+          금액
+          <input id="debtAmount" name="amount" type="text" inputmode="numeric" placeholder="0" required />
+        </label>
+        <label>
+          종류
+          <select id="debtType" name="type">
+            <option>대출</option>
+            <option>빌린돈</option>
+            <option>카드값</option>
+            <option>기타</option>
+          </select>
+        </label>
+        <div class="dialog-actions">
+          <button class="ghost-button" type="button" data-close-dialog>취소</button>
+          <button class="primary-button danger" type="submit">저장</button>
+        </div>
+      </form>
+    </dialog>
 
     <script src="script.js"></script>
   </body>
