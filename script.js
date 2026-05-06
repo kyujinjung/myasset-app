@@ -12,8 +12,10 @@ const elements = {
   amountInputs: document.querySelectorAll('input[name="amount"]'),
   assetDialog: document.querySelector("#assetDialog"),
   debtDialog: document.querySelector("#debtDialog"),
+  settingsDialog: document.querySelector("#settingsDialog"),
   openAssetDialog: document.querySelector("#openAssetDialog"),
   openDebtDialog: document.querySelector("#openDebtDialog"),
+  openSettingsDialog: document.querySelector("#openSettingsDialog"),
   assetList: document.querySelector("#assetList"),
   debtList: document.querySelector("#debtList"),
   assetCount: document.querySelector("#assetCount"),
@@ -21,9 +23,15 @@ const elements = {
   totalAssets: document.querySelector("#totalAssets"),
   totalDebts: document.querySelector("#totalDebts"),
   netWorth: document.querySelector("#netWorth"),
+  hideAmountsToggle: document.querySelector("#hideAmountsToggle"),
+  darkModeToggle: document.querySelector("#darkModeToggle"),
   resetButton: document.querySelector("#resetButton"),
   template: document.querySelector("#itemTemplate"),
 };
+
+applyTheme();
+elements.hideAmountsToggle.checked = state.hideAmounts;
+elements.darkModeToggle.checked = state.darkMode;
 
 elements.amountInputs.forEach((input) => {
   input.addEventListener("input", () => {
@@ -39,13 +47,17 @@ elements.openDebtDialog.addEventListener("click", () => {
   openCreateDialog("debts");
 });
 
+elements.openSettingsDialog.addEventListener("click", () => {
+  openDialog(elements.settingsDialog);
+});
+
 document.querySelectorAll("[data-close-dialog]").forEach((button) => {
   button.addEventListener("click", () => {
     closeDialog(button.closest("dialog"));
   });
 });
 
-[elements.assetDialog, elements.debtDialog].forEach((dialog) => {
+[elements.assetDialog, elements.debtDialog, elements.settingsDialog].forEach((dialog) => {
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog) {
       closeDialog(dialog);
@@ -53,7 +65,10 @@ document.querySelectorAll("[data-close-dialog]").forEach((button) => {
   });
 
   dialog.addEventListener("close", () => {
-    dialog.querySelector("form").reset();
+    const form = dialog.querySelector("form");
+    if (form) {
+      form.reset();
+    }
   });
 });
 
@@ -77,6 +92,18 @@ elements.resetButton.addEventListener("click", () => {
   state.debts = [];
   persist();
   render();
+});
+
+elements.hideAmountsToggle.addEventListener("change", () => {
+  state.hideAmounts = elements.hideAmountsToggle.checked;
+  persist();
+  render();
+});
+
+elements.darkModeToggle.addEventListener("change", () => {
+  state.darkMode = elements.darkModeToggle.checked;
+  persist();
+  applyTheme();
 });
 
 function openCreateDialog(collection) {
@@ -108,7 +135,10 @@ function openEditDialog(collection, id) {
 
 function openDialog(dialog) {
   dialog.showModal();
-  dialog.querySelector("input").focus();
+  const focusTarget = dialog.querySelector("input, button, select");
+  if (focusTarget) {
+    focusTarget.focus();
+  }
 }
 
 function closeDialog(dialog) {
@@ -161,9 +191,9 @@ function render() {
   const totalDebts = sum(state.debts);
   const netWorth = totalAssets - totalDebts;
 
-  elements.totalAssets.textContent = formatWon(totalAssets);
-  elements.totalDebts.textContent = formatWon(totalDebts);
-  elements.netWorth.textContent = formatWon(netWorth);
+  elements.totalAssets.textContent = formatSummaryAmount(totalAssets);
+  elements.totalDebts.textContent = formatSummaryAmount(totalDebts);
+  elements.netWorth.textContent = formatSummaryAmount(netWorth);
   elements.assetCount.textContent = `${state.assets.length}개`;
   elements.debtCount.textContent = `${state.debts.length}개`;
 }
@@ -180,7 +210,7 @@ function renderList(collection, list) {
     row.classList.toggle("debt", collection === "debts");
     fragment.querySelector(".item-name").textContent = item.name;
     fragment.querySelector(".item-type").textContent = item.type;
-    fragment.querySelector(".item-amount").textContent = formatWon(item.amount);
+    fragment.querySelector(".item-amount").textContent = formatDisplayAmount(item.amount);
     editButton.addEventListener("click", () => openEditDialog(collection, item.id));
     deleteButton.addEventListener("click", () => deleteEntry(collection, item.id));
 
@@ -230,6 +260,19 @@ function formatWon(value) {
   }).format(value);
 }
 
+function formatSummaryAmount(value) {
+  return formatDisplayAmount(value);
+}
+
+function formatDisplayAmount(value) {
+  const formatted = formatWon(value);
+  return state.hideAmounts ? maskDigits(formatted) : formatted;
+}
+
+function maskDigits(value) {
+  return String(value).replace(/\d/g, "*");
+}
+
 function createId() {
   if (window.crypto && typeof window.crypto.randomUUID === "function") {
     return window.crypto.randomUUID();
@@ -242,11 +285,25 @@ function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+function applyTheme() {
+  document.documentElement.dataset.theme = state.darkMode ? "dark" : "light";
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  if (themeColor) {
+    themeColor.setAttribute("content", state.darkMode ? "#111713" : "#1f2a24");
+  }
+}
+
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved && Array.isArray(saved.assets) && Array.isArray(saved.debts)) {
-      return saved;
+      const hideAmounts = "hideAmounts" in saved ? saved.hideAmounts : saved.hideSummaryAmounts;
+
+      return {
+        ...saved,
+        hideAmounts: Boolean(hideAmounts),
+        darkMode: Boolean(saved.darkMode),
+      };
     }
   } catch {
     localStorage.removeItem(STORAGE_KEY);
@@ -255,6 +312,8 @@ function loadState() {
   return {
     assets: [],
     debts: [],
+    hideAmounts: false,
+    darkMode: false,
   };
 }
 

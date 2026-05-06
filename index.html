@@ -22,9 +22,11 @@
           <p class="eyebrow">Personal balance</p>
           <h1>자산 관리</h1>
         </div>
-        <button class="ghost-button" id="resetButton" type="button" aria-label="전체 데이터 초기화">
-          초기화
-        </button>
+        <div class="topbar-actions">
+          <button class="ghost-button" id="openSettingsDialog" type="button" aria-label="설정 열기">
+            설정
+          </button>
+        </div>
       </header>
 
       <section class="summary-grid" aria-label="자산 요약">
@@ -160,6 +162,40 @@
           <button class="primary-button danger" type="submit" data-submit-label>저장</button>
         </div>
       </form>
+    </dialog>
+
+    <dialog class="entry-dialog settings-dialog" id="settingsDialog" aria-labelledby="settingsDialogTitle">
+      <div class="settings-panel">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Settings</p>
+            <h2 id="settingsDialogTitle">설정</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog aria-label="팝업 닫기">×</button>
+        </div>
+
+        <div class="settings-list">
+          <label class="setting-row">
+            <span>
+              <strong>금액 숨김</strong>
+              <small>요약과 목록의 금액을 가립니다.</small>
+            </span>
+            <input id="hideAmountsToggle" type="checkbox" />
+          </label>
+
+          <label class="setting-row">
+            <span>
+              <strong>다크모드</strong>
+              <small>어두운 화면 색상을 사용합니다.</small>
+            </span>
+            <input id="darkModeToggle" type="checkbox" />
+          </label>
+        </div>
+
+        <button class="ghost-button reset-action" id="resetButton" type="button" aria-label="전체 데이터 초기화">
+          초기화
+        </button>
+      </div>
     </dialog>
 
     <script src="script.js"></script>

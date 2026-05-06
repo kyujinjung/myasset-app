@@ -9,9 +9,26 @@
   --debt: #b8453e;
   --debt-soft: #f7e2df;
   --focus: #3858d6;
+  --input-bg: #fbfcfa;
+  --shadow: rgba(32, 36, 31, 0.22);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg: #111713;
+  --ink: #eef3ec;
+  --muted: #aab4a7;
+  --line: #344037;
+  --panel: #19211c;
+  --asset: #42c99b;
+  --asset-soft: #18372c;
+  --debt: #ef827a;
+  --debt-soft: #3b2221;
+  --focus: #86a2ff;
+  --input-bg: #121914;
+  --shadow: rgba(0, 0, 0, 0.44);
 }
 
 * {
@@ -52,6 +69,74 @@ button {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 24px;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.setting-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 68px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.setting-row span {
+  display: grid;
+  gap: 4px;
+}
+
+.setting-row strong {
+  font-size: 0.95rem;
+}
+
+.setting-row small {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.setting-row input {
+  appearance: none;
+  position: relative;
+  flex: 0 0 auto;
+  width: 44px;
+  min-height: 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--line);
+  padding: 0;
+  transition: background 160ms ease;
+}
+
+.setting-row input::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(32, 36, 31, 0.24);
+  transition: transform 160ms ease;
+}
+
+.setting-row input:checked {
+  background: var(--ink);
+}
+
+.setting-row input:checked::before {
+  transform: translateX(20px);
 }
 
 .eyebrow {
@@ -129,6 +214,10 @@ h2 {
   color: #ffffff;
 }
 
+[data-theme="dark"] .net-worth {
+  background: #22382e;
+}
+
 .net-worth span {
   color: #cdd9d0;
 }
@@ -193,7 +282,7 @@ select {
   min-height: 46px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fbfcfa;
+  background: var(--input-bg);
   color: var(--ink);
   padding: 0 12px;
   font-size: 16px;
@@ -225,7 +314,7 @@ button:focus-visible {
   border-radius: 8px;
   background: var(--panel);
   color: var(--ink);
-  box-shadow: 0 20px 60px rgba(32, 36, 31, 0.22);
+  box-shadow: 0 20px 60px var(--shadow);
 }
 
 .entry-dialog::backdrop {
@@ -253,6 +342,22 @@ button:focus-visible {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 4px;
+}
+
+.settings-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-list {
+  display: grid;
+  gap: 10px;
+}
+
+.reset-action {
+  width: 100%;
+  border-color: var(--debt);
+  color: var(--debt);
 }
 
 .list-section {
@@ -293,7 +398,7 @@ button:focus-visible {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fbfcfa;
+  background: var(--input-bg);
 }
 
 .item-name {
@@ -350,6 +455,11 @@ button:focus-visible {
 
   .topbar {
     align-items: flex-start;
+  }
+
+  .topbar-actions {
+    flex-direction: column;
+    align-items: flex-end;
   }
 
   .summary-grid,
