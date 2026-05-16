@@ -42,6 +42,18 @@
           <span>총 부채</span>
           <strong id="totalDebts">0원</strong>
         </article>
+        <article class="summary-panel availability-panel">
+          <span>장기가용금</span>
+          <strong id="longTermAssets">0원</strong>
+        </article>
+        <article class="summary-panel availability-panel">
+          <span>단기가용금</span>
+          <strong id="shortTermAssets">0원</strong>
+        </article>
+        <article class="summary-panel availability-panel immediate">
+          <span>즉시가용금</span>
+          <strong id="immediateAssets">0원</strong>
+        </article>
       </section>
 
       <section class="entry-layout" aria-label="자산 및 부채 입력">
@@ -122,6 +134,14 @@
             <option>주식</option>
             <option>부동산</option>
             <option>기타</option>
+          </select>
+        </label>
+        <label>
+          가용성
+          <select id="assetAvailability" name="availability">
+            <option value="long">장기</option>
+            <option value="short">단기</option>
+            <option value="immediate" selected>즉시</option>
           </select>
         </label>
         <div class="dialog-actions">

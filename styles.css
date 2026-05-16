@@ -222,6 +222,19 @@ h2 {
   color: #cdd9d0;
 }
 
+.availability-panel {
+  background: var(--asset-soft);
+}
+
+.availability-panel span,
+.availability-panel strong {
+  color: var(--asset);
+}
+
+.availability-panel.immediate {
+  border-color: var(--asset);
+}
+
 .entry-layout,
 .list-layout {
   display: grid;

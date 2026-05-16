@@ -1,4 +1,9 @@
 const STORAGE_KEY = "asset-manager-state";
+const ASSET_AVAILABILITY = {
+  long: "장기",
+  short: "단기",
+  immediate: "즉시",
+};
 
 const state = loadState();
 const editing = {
@@ -23,6 +28,9 @@ const elements = {
   totalAssets: document.querySelector("#totalAssets"),
   totalDebts: document.querySelector("#totalDebts"),
   netWorth: document.querySelector("#netWorth"),
+  longTermAssets: document.querySelector("#longTermAssets"),
+  shortTermAssets: document.querySelector("#shortTermAssets"),
+  immediateAssets: document.querySelector("#immediateAssets"),
   hideAmountsToggle: document.querySelector("#hideAmountsToggle"),
   darkModeToggle: document.querySelector("#darkModeToggle"),
   resetButton: document.querySelector("#resetButton"),
@@ -129,6 +137,9 @@ function openEditDialog(collection, id) {
   form.elements.name.value = item.name;
   form.elements.amount.value = formatInputAmount(item.amount);
   form.elements.type.value = item.type;
+  if (collection === "assets") {
+    form.elements.availability.value = getAssetAvailability(item.availability);
+  }
   setDialogMode(collection, "edit");
   openDialog(dialog);
 }
@@ -150,6 +161,7 @@ function saveEntry(collection, form, dialog) {
   const name = String(data.get("name") || "").trim();
   const amount = parseInputAmount(data.get("amount"));
   const type = String(data.get("type") || "기타");
+  const availability = getAssetAvailability(data.get("availability"));
 
   if (!name || !Number.isFinite(amount) || amount <= 0) return;
 
@@ -159,14 +171,23 @@ function saveEntry(collection, form, dialog) {
       item.name = name;
       item.amount = amount;
       item.type = type;
+      if (collection === "assets") {
+        item.availability = availability;
+      }
     }
   } else {
-    state[collection].push({
+    const entry = {
       id: createId(),
       name,
       amount,
       type,
-    });
+    };
+
+    if (collection === "assets") {
+      entry.availability = availability;
+    }
+
+    state[collection].push(entry);
   }
 
   persist();
@@ -190,10 +211,14 @@ function render() {
   const totalAssets = sum(state.assets);
   const totalDebts = sum(state.debts);
   const netWorth = totalAssets - totalDebts;
+  const availabilityTotals = sumAssetsByAvailability();
 
   elements.totalAssets.textContent = formatSummaryAmount(totalAssets);
   elements.totalDebts.textContent = formatSummaryAmount(totalDebts);
   elements.netWorth.textContent = formatSummaryAmount(netWorth);
+  elements.longTermAssets.textContent = formatSummaryAmount(availabilityTotals.long);
+  elements.shortTermAssets.textContent = formatSummaryAmount(availabilityTotals.short);
+  elements.immediateAssets.textContent = formatSummaryAmount(availabilityTotals.immediate);
   elements.assetCount.textContent = `${state.assets.length}개`;
   elements.debtCount.textContent = `${state.debts.length}개`;
 }
@@ -209,7 +234,7 @@ function renderList(collection, list) {
 
     row.classList.toggle("debt", collection === "debts");
     fragment.querySelector(".item-name").textContent = item.name;
-    fragment.querySelector(".item-type").textContent = item.type;
+    fragment.querySelector(".item-type").textContent = getItemTypeLabel(collection, item);
     fragment.querySelector(".item-amount").textContent = formatDisplayAmount(item.amount);
     editButton.addEventListener("click", () => openEditDialog(collection, item.id));
     deleteButton.addEventListener("click", () => deleteEntry(collection, item.id));
@@ -220,6 +245,29 @@ function renderList(collection, list) {
 
 function sum(items) {
   return items.reduce((total, item) => total + item.amount, 0);
+}
+
+function sumAssetsByAvailability() {
+  return state.assets.reduce(
+    (totals, item) => {
+      const availability = getAssetAvailability(item.availability);
+      totals[availability] += item.amount;
+      return totals;
+    },
+    { long: 0, short: 0, immediate: 0 },
+  );
+}
+
+function getItemTypeLabel(collection, item) {
+  if (collection !== "assets") {
+    return item.type;
+  }
+
+  return `${item.type} · ${ASSET_AVAILABILITY[getAssetAvailability(item.availability)]}`;
+}
+
+function getAssetAvailability(value) {
+  return Object.prototype.hasOwnProperty.call(ASSET_AVAILABILITY, value) ? value : "immediate";
 }
 
 function formatInputAmount(value) {
@@ -301,6 +349,7 @@ function loadState() {
 
       return {
         ...saved,
+        assets: saved.assets.map(normalizeAsset),
         hideAmounts: Boolean(hideAmounts),
         darkMode: Boolean(saved.darkMode),
       };
@@ -314,6 +363,13 @@ function loadState() {
     debts: [],
     hideAmounts: false,
     darkMode: false,
+  };
+}
+
+function normalizeAsset(asset) {
+  return {
+    ...asset,
+    availability: getAssetAvailability(asset.availability),
   };
 }
 
