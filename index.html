@@ -74,23 +74,80 @@
         </article>
       </section>
 
-      <section class="list-layout" aria-label="자산 및 부채 목록">
-        <div class="list-section">
-          <div class="section-heading">
-            <h2>자산 목록</h2>
-            <span id="assetCount">0개</span>
-          </div>
-          <ul class="money-list" id="assetList"></ul>
-        </div>
+      <div class="view-switch">
+        <button class="ghost-button" id="toggleAllocationPage" type="button" aria-pressed="false">
+          비중
+        </button>
+      </div>
 
-        <div class="list-section">
-          <div class="section-heading">
-            <h2>부채 목록</h2>
-            <span id="debtCount">0개</span>
+      <div class="overview-page" id="overviewPage">
+        <section class="list-layout" aria-label="자산 및 부채 목록">
+          <div class="list-section">
+            <div class="section-heading">
+              <h2>자산 목록</h2>
+              <span id="assetCount">0개</span>
+            </div>
+            <ul class="money-list" id="assetList"></ul>
           </div>
-          <ul class="money-list" id="debtList"></ul>
-        </div>
+
+          <div class="list-section">
+            <div class="section-heading">
+              <h2>부채 목록</h2>
+              <span id="debtCount">0개</span>
+            </div>
+            <ul class="money-list" id="debtList"></ul>
+          </div>
+        </section>
+      </div>
+
+      <section class="allocation-page" id="allocationPage" aria-label="자산 비중" hidden>
+        <article class="allocation-section">
+          <div class="allocation-heading">
+            <div>
+              <p class="eyebrow">Allocation</p>
+              <h2>자산 비중</h2>
+            </div>
+            <span id="allocationTotal">0원</span>
+          </div>
+
+          <div class="allocation-layout">
+            <div class="chart-panel">
+              <div class="pie-chart" id="assetPieChart" role="img" aria-label="자산 비중 원형 그래프">
+                <span id="pieCenterLabel">0%</span>
+              </div>
+            </div>
+
+            <ul class="allocation-list" id="allocationList"></ul>
+          </div>
+        </article>
+
+        <article class="allocation-section">
+          <div class="allocation-heading">
+            <div>
+              <p class="eyebrow">Availability</p>
+              <h2>가용성 비중</h2>
+            </div>
+            <span id="availabilityAllocationTotal">0원</span>
+          </div>
+
+          <div class="allocation-layout">
+            <div class="chart-panel">
+              <div
+                class="pie-chart"
+                id="availabilityPieChart"
+                role="img"
+                aria-label="장기 단기 즉시 비중 원형 그래프"
+              >
+                <span id="availabilityPieCenterLabel">0%</span>
+              </div>
+            </div>
+
+            <ul class="allocation-list" id="availabilityAllocationList"></ul>
+          </div>
+        </article>
       </section>
+
+      <footer class="app-footer">copyright © Glam24. All rights reserved.</footer>
     </main>
 
     <template id="itemTemplate">

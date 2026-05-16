@@ -4,6 +4,21 @@ const ASSET_AVAILABILITY = {
   short: "단기",
   immediate: "즉시",
 };
+const ASSET_COLORS = [
+  "#0b7a5a",
+  "#3858d6",
+  "#d58b13",
+  "#b8453e",
+  "#7c4dff",
+  "#0f8ea8",
+  "#6f7d1b",
+  "#c45086",
+];
+const AVAILABILITY_COLORS = {
+  long: "#3858d6",
+  short: "#d58b13",
+  immediate: "#0b7a5a",
+};
 
 const state = loadState();
 const editing = {
@@ -18,11 +33,22 @@ const elements = {
   assetDialog: document.querySelector("#assetDialog"),
   debtDialog: document.querySelector("#debtDialog"),
   settingsDialog: document.querySelector("#settingsDialog"),
+  overviewPage: document.querySelector("#overviewPage"),
+  allocationPage: document.querySelector("#allocationPage"),
   openAssetDialog: document.querySelector("#openAssetDialog"),
   openDebtDialog: document.querySelector("#openDebtDialog"),
   openSettingsDialog: document.querySelector("#openSettingsDialog"),
+  toggleAllocationPage: document.querySelector("#toggleAllocationPage"),
   assetList: document.querySelector("#assetList"),
   debtList: document.querySelector("#debtList"),
+  assetPieChart: document.querySelector("#assetPieChart"),
+  pieCenterLabel: document.querySelector("#pieCenterLabel"),
+  allocationTotal: document.querySelector("#allocationTotal"),
+  allocationList: document.querySelector("#allocationList"),
+  availabilityPieChart: document.querySelector("#availabilityPieChart"),
+  availabilityPieCenterLabel: document.querySelector("#availabilityPieCenterLabel"),
+  availabilityAllocationTotal: document.querySelector("#availabilityAllocationTotal"),
+  availabilityAllocationList: document.querySelector("#availabilityAllocationList"),
   assetCount: document.querySelector("#assetCount"),
   debtCount: document.querySelector("#debtCount"),
   totalAssets: document.querySelector("#totalAssets"),
@@ -57,6 +83,12 @@ elements.openDebtDialog.addEventListener("click", () => {
 
 elements.openSettingsDialog.addEventListener("click", () => {
   openDialog(elements.settingsDialog);
+});
+
+elements.toggleAllocationPage.addEventListener("click", () => {
+  state.activePage = state.activePage === "allocation" ? "overview" : "allocation";
+  persist();
+  render();
 });
 
 document.querySelectorAll("[data-close-dialog]").forEach((button) => {
@@ -221,6 +253,9 @@ function render() {
   elements.immediateAssets.textContent = formatSummaryAmount(availabilityTotals.immediate);
   elements.assetCount.textContent = `${state.assets.length}개`;
   elements.debtCount.textContent = `${state.debts.length}개`;
+
+  renderActivePage();
+  renderAllocation();
 }
 
 function renderList(collection, list) {
@@ -241,6 +276,131 @@ function renderList(collection, list) {
 
     list.append(fragment);
   });
+}
+
+function renderActivePage() {
+  const isAllocationPage = state.activePage === "allocation";
+
+  elements.overviewPage.hidden = isAllocationPage;
+  elements.allocationPage.hidden = !isAllocationPage;
+  elements.toggleAllocationPage.textContent = isAllocationPage ? "목록" : "비중";
+  elements.toggleAllocationPage.setAttribute("aria-pressed", String(isAllocationPage));
+}
+
+function renderAllocation() {
+  const totalAssets = sum(state.assets);
+  const assetSegments = getAssetSegments(totalAssets);
+  const availabilitySegments = getAvailabilitySegments(totalAssets);
+
+  renderAllocationChart({
+    total: totalAssets,
+    segments: assetSegments,
+    totalElement: elements.allocationTotal,
+    chartElement: elements.assetPieChart,
+    centerElement: elements.pieCenterLabel,
+    listElement: elements.allocationList,
+    emptyText: "자산을 추가하면 비중 그래프가 표시됩니다.",
+  });
+
+  renderAllocationChart({
+    total: totalAssets,
+    segments: availabilitySegments,
+    totalElement: elements.availabilityAllocationTotal,
+    chartElement: elements.availabilityPieChart,
+    centerElement: elements.availabilityPieCenterLabel,
+    listElement: elements.availabilityAllocationList,
+    emptyText: "자산을 추가하면 가용성 비중이 표시됩니다.",
+  });
+}
+
+function renderAllocationChart({
+  total,
+  segments,
+  totalElement,
+  chartElement,
+  centerElement,
+  listElement,
+  emptyText,
+}) {
+  totalElement.textContent = formatDisplayAmount(total);
+  centerElement.textContent = total > 0 ? "100%" : "0%";
+  chartElement.style.background = getPieBackground(segments);
+  chartElement.classList.toggle("empty", total <= 0);
+  listElement.replaceChildren();
+
+  if (!segments.length) {
+    const emptyItem = document.createElement("li");
+    emptyItem.className = "allocation-empty";
+    emptyItem.textContent = emptyText;
+    listElement.append(emptyItem);
+    return;
+  }
+
+  segments.forEach((segment) => {
+    const item = document.createElement("li");
+    item.className = "allocation-item";
+
+    const swatch = document.createElement("span");
+    swatch.className = "allocation-swatch";
+    swatch.style.background = segment.color;
+
+    const text = document.createElement("div");
+    const name = document.createElement("strong");
+    const meta = document.createElement("span");
+    name.textContent = segment.name;
+    meta.textContent = `${segment.type} · ${segment.percent.toFixed(1)}%`;
+    text.append(name, meta);
+
+    const amount = document.createElement("b");
+    amount.textContent = formatDisplayAmount(segment.amount);
+
+    item.append(swatch, text, amount);
+    listElement.append(item);
+  });
+}
+
+function getAssetSegments(totalAssets) {
+  if (totalAssets <= 0) return [];
+
+  return state.assets.map((asset, index) => ({
+    name: asset.name,
+    type: getItemTypeLabel("assets", asset),
+    amount: asset.amount,
+    percent: (asset.amount / totalAssets) * 100,
+    color: ASSET_COLORS[index % ASSET_COLORS.length],
+  }));
+}
+
+function getAvailabilitySegments(totalAssets) {
+  if (totalAssets <= 0) return [];
+
+  const totals = sumAssetsByAvailability();
+
+  return Object.keys(ASSET_AVAILABILITY)
+    .map((availability) => ({
+      name: ASSET_AVAILABILITY[availability],
+      type: "가용성",
+      amount: totals[availability],
+      percent: (totals[availability] / totalAssets) * 100,
+      color: AVAILABILITY_COLORS[availability],
+    }))
+    .filter((segment) => segment.amount > 0);
+}
+
+function getPieBackground(segments) {
+  if (!segments.length) {
+    return "conic-gradient(var(--line) 0deg 360deg)";
+  }
+
+  let current = 0;
+  const stops = segments.map((segment, index) => {
+    const start = current;
+    const end = index === segments.length - 1 ? 360 : current + segment.percent * 3.6;
+    current = end;
+    return `${segment.color} ${start.toFixed(2)}deg ${end.toFixed(2)}deg`;
+  });
+
+  return `conic-gradient(${stops.join(", ")})`;
 }
 
 function sum(items) {
@@ -352,6 +512,7 @@ function loadState() {
         assets: saved.assets.map(normalizeAsset),
         hideAmounts: Boolean(hideAmounts),
         darkMode: Boolean(saved.darkMode),
+        activePage: saved.activePage === "allocation" ? "allocation" : "overview",
       };
     }
   } catch {
@@ -363,6 +524,7 @@ function loadState() {
     debts: [],
     hideAmounts: false,
     darkMode: false,
+    activePage: "overview",
   };
 }
 
